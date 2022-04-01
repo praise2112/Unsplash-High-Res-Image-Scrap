@@ -1,0 +1,8 @@
+.notes
+r.py
+chromedriver.exe
+geckodriver.exe
+*.csv
+*.json
+*.jpg
+.idea

@@ -1,0 +1,51 @@
+  # print("Writing CSV")
+  # with open(CONFIG['csv_name'], 'w', newline='',  encoding="utf-8") as csvfile:
+  #   writer = csv.writer(csvfile, delimiter=',')
+  #   writer.writerow(["ID", "Description"])
+  #   for i in tqdm(range(len(links))):
+  #     writer.writerow([f"{links[i][1]}.jpg", descriptions[i]])
+  print("DONE")
+
+
+  print("Scrapping Descriptions")
+  descriptions = []
+  for col in tqdm(range(3)):
+    for i in range(int(CONFIG["no_of_images_to_scrap"]/2)):
+      try:
+        a_tags = driver.find_element(By.XPATH,
+                                     f"/html/body/div/div/div[6]/div/div/div/div[{col + 1}]/figure[{i + 1}]/div/div[2]/div/div") \
+          .find_elements(By.TAG_NAME, "a")
+        descriptions.append(html.unescape(" | ".join([tag.get_attribute('innerHTML') for tag in a_tags])))
+      except Exception as e:
+        break
+
+
+def apply_rand_degradation(image, max_num_of_degradation=4):
+  # num_of_degradation = random.randint(1, max_num_of_degradation) # pick random amount of degradation to apply
+  # degradations = ['blur', 'noise', 'saltpepper', 'jpeg']
+  num_of_degradation = 3 # pick random amount of degradation to apply
+  degradations = ['blur',  'jpeg', 'noise',]
+  chosen_degradations = degradations # pick random degradations
+  if 'jpeg' in chosen_degradations: # to avoid color inversion, blur must be last
+    chosen_degradations.remove('jpeg')
+    print(chosen_degradations)
+    chosen_degradations.insert(0, 'jpeg')
+  print(chosen_degradations)
+  for degradation in chosen_degradations:
+    if degradation == 'jpeg':
+      k = random.randint(5, 30)
+      print(k)
+      image = degrade.jpeg(image, jpeg_quality=k)
+      # image = degrade.jpeg(image, jpeg_quality=random.randint(5, 30))
+    elif degradation == 'noise':
+      k = random.randint(30, 100)
+      print(k)
+      image = np.array(np.ceil(degrade.noise(image, noise_sigma=k)), np.int32)
+    # elif degradation == 'saltpepper':
+    #   image = degrade.saltpepper(image, p=random.randint(10, 60)/100)
+    elif degradation == 'blur':
+      k = random.randint(3, 12)
+      print(k)
+      image = degrade.blur(image, blur_sigma=17)
+
+  return image, chosen_degradations
